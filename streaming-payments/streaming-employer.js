@@ -18,7 +18,6 @@ function hmac (secret, input) {
 }
 
 var loop;
-//var balance;
 
 const connect = (userId) => {
 
@@ -44,8 +43,6 @@ const connect = (userId) => {
 					amount: destinationAmount,
 					data: ''
 				});
-
-				//this.balance = res.headers.get('Balance');
 
 				process.stdout.write('.')
 				
@@ -78,5 +75,12 @@ const stop = () => {
 	clearInterval(loop);
 };
 
+const getBalance = async () => {
+  return plugin.getBalance().then((balance) => {
+    return balance;
+  });
+}
+
 exports.connect = connect;
 exports.stop = stop;
+exports.getBalance = getBalance;

@@ -46,7 +46,7 @@ exports.xrp = {
       secret: 'spmf5Q1o8trj7bdVPYa9gZBJwaBKL',
       account: 'rMLrnbDDiq9FC9iYygdKNwRWhFjc2ZW2LW',
       server: 'wss://s.altnet.rippletest.net:51233',
-      prefix: 'test.crypto.xrp.'
+      prefix: 'test.crypto.xrp.',
     })
   },
   Employee: function () {
@@ -54,7 +54,7 @@ exports.xrp = {
       secret: 'ssGhx2c11zar3hKMWjVLihaj9jU8q',
       account: 'rUwtHyRnrcUUZBqp3Dx9QmjT5v6vLXGTcv',
       server: 'wss://s.altnet.rippletest.net:51233',
-      prefix: 'test.crypto.xrp.'
+      prefix: 'test.crypto.xrp.',
     })
   }
 }

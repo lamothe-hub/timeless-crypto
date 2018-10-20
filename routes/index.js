@@ -27,4 +27,10 @@ router.get('/userbalance', async function(res, res, next) {
   res.send(balance);
 });
 
+router.get('/employerbalance', async function(res, res, next) {
+  let balance = await employer.getBalance();
+  console.log("BALANCE IS " + balance);
+  res.send(balance);
+});
+
 module.exports = router;

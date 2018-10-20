@@ -147,9 +147,8 @@ const connect = () => {
   });
 }
 
-const getBalance = () => {
+const getBalance = async () => {
   return plugin.getBalance().then((balance) => {
-    console.log("BALANCE IS " + balance);
     return balance;
   });
 }
