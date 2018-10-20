@@ -41,7 +41,7 @@ const XrpEscrowPlugin = require('ilp-plugin-xrp-escrow')
  */
 
 exports.xrp = {
-  Customer: function () {
+  Employer: function () {
     return new XrpEscrowPlugin({
       secret: 'spmf5Q1o8trj7bdVPYa9gZBJwaBKL',
       account: 'rMLrnbDDiq9FC9iYygdKNwRWhFjc2ZW2LW',
@@ -49,7 +49,7 @@ exports.xrp = {
       prefix: 'test.crypto.xrp.'
     })
   },
-  Shop: function () {
+  Employee: function () {
     return new XrpEscrowPlugin({
       secret: 'ssGhx2c11zar3hKMWjVLihaj9jU8q',
       account: 'rUwtHyRnrcUUZBqp3Dx9QmjT5v6vLXGTcv',

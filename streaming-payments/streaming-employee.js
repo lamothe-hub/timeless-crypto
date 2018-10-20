@@ -1,7 +1,7 @@
 const http = require('http')
 const url = require('url')
 const crypto = require('crypto')
-const plugin = require('./plugins.js').xrp.Shop()
+const plugin = require('./plugins.js').xrp.Employee()
 const IlpPacket = require('ilp-packet')
 
 function base64url (buf) {
@@ -20,27 +20,32 @@ function hmac (secret, input) {
 let sharedSecrets = {}
 const cost = 10
 
-console.log(`== Starting the shop server == `)
-console.log(` 1. Connecting to an account to accept payments...`)
+const connect = () => {
+  console.log(`== Starting the shop server == `)
+  console.log(` 1. Connecting to an account to accept payments...`)
 
-plugin.connect().then(function () {
-  // Get ledger and account information from the plugin
-  const ledgerInfo = plugin.getInfo()
-  const account = plugin.getAccount()
+  plugin
+  .connect()
+  .then( () => {
+  
+    // Get ledger and account information from the plugin
+    const ledgerInfo = plugin.getInfo()
+    const account = plugin.getAccount()
 
-  console.log(`    - Connected to ledger: ${ledgerInfo.prefix}`)
-  console.log(`    -- Account: ${account}`)
-  console.log(`    -- Currency: ${ledgerInfo.currencyCode}`)
-  console.log(`    -- CurrencyScale: ${ledgerInfo.currencyScale}`)
+    console.log(`    - Connected to ledger: ${ledgerInfo.prefix}`)
+    console.log(`    -- Account: ${account}`)
+    console.log(`    -- Currency: ${ledgerInfo.currencyCode}`)
+    console.log(`    -- CurrencyScale: ${ledgerInfo.currencyScale}`)
 
-  // Convert our cost (10) into the right format given the ledger scale
-  const normalizedCost = cost / Math.pow(10, parseInt(ledgerInfo.currencyScale))
+    // Convert our cost (10) into the right format given the ledger scale
+    const normalizedCost = cost / Math.pow(10, parseInt(ledgerInfo.currencyScale))
 
-  console.log(` 2. Starting web server to accept requests...`)
-  console.log(`    - Charging ${normalizedCost} ${ledgerInfo.currencyCode}`)
+    console.log(` 2. Starting web server to accept requests...`)
+    console.log(`    - Charging ${normalizedCost} ${ledgerInfo.currencyCode}`)
 
-  // Handle incoming web requests
-  http.createServer(function (req, res) {
+    // Handle incoming web requests
+    http.createServer(function (req, res) {
+
       // Generate a client ID and a shared secret from which this client
       // can derive fulfillment/condition pairs.
       const clientId = base64url(crypto.randomBytes(8))
@@ -54,12 +59,14 @@ plugin.connect().then(function () {
       res.writeHead(200, {
         Pay: `interledger-psk ${cost} ${account}.${clientId} ${base64url(sharedSecret)}`
       })
+
       // Flush the headers in a first TCP packet:
       res.socket.write(res._header)
       res._headerSent = true
-  }).listen(8000, function () {
-    console.log(`    - Listening on http://localhost:8000`)
-  })
+
+    })
+    .listen(8000, () => { console.log(`    - Listening on http://localhost:8000`) })
+  });
 
   // Handle incoming payments
   plugin.on('incoming_prepare', function (transfer) {
@@ -83,6 +90,7 @@ plugin.connect().then(function () {
       })
       return
     }
+
     // Generate fulfillment from packet and this client's shared secret
     const ilpPacket = Buffer.from(transfer.ilp, 'base64')
     const payment = IlpPacket.deserializeIlpPayment(ilpPacket)
@@ -121,7 +129,7 @@ plugin.connect().then(function () {
     console.log(` 4. Accepted payment with condition ` +
                                             `${transfer.executionCondition}.`)
     console.log(`    - Fulfilling transfer on the ledger ` +
-                               `using fulfillment: ${base64url(fulfillment)}`)
+                                `using fulfillment: ${base64url(fulfillment)}`)
 
     // The ledger will check if the fulfillment is correct and
     // if it was submitted before the transfer's rollback timeout
@@ -129,7 +137,8 @@ plugin.connect().then(function () {
       .catch(function () {
         console.log(`    - Error fulfilling the transfer`)
       })
-    console.log(`    - Payment complete`)
-    
+      console.log(`    - Payment complete`)
   })
-})
+}
+
+exports.connect = connect;
