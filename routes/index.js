@@ -5,7 +5,7 @@ var router = express.Router();
 
 router.get('/start', async function(req, res, next) {
   await employee.connect();
-  await employer.connect();
+  await employer.connect('');
 
   
 	let msg = "STARTED RESPONDING TO PAYMENT REQUESTS";
@@ -19,6 +19,12 @@ router.get('/stop', async function(req, res, next) {
 	let msg = "STOPPED RESPONDING TO PAYMENT REQUESTS";
 	console.log(msg);
 	res.send(msg);
+});
+
+router.get('/userbalance', async function(res, res, next) {
+  let balance = await employee.getBalance();
+  console.log("BALANCE IS " + balance);
+  res.send(balance);
 });
 
 module.exports = router;

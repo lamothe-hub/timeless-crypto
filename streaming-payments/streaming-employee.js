@@ -18,6 +18,7 @@ function hmac (secret, input) {
 }
 
 let sharedSecrets = {}
+let usrURL;
 const cost = 10
 
 const connect = () => {
@@ -50,6 +51,7 @@ const connect = () => {
       // can derive fulfillment/condition pairs.
       const clientId = base64url(crypto.randomBytes(8))
       const sharedSecret = crypto.randomBytes(32)
+      usrURL = req.url;
 
       // Store the shared secret and the http request context to use when we get paid
       sharedSecrets[clientId]  = { sharedSecret, res }
@@ -57,15 +59,16 @@ const connect = () => {
       console.log(`    - Waiting for payments...`)
 
       res.writeHead(200, {
-        Pay: `interledger-psk ${cost} ${account}.${clientId} ${base64url(sharedSecret)}`
+        Pay: `interledger-psk ${cost} ${account}.${clientId} ${base64url(sharedSecret)}`,
+        UserId: `${usrURL.substring(1)}`
       })
-
+      
       // Flush the headers in a first TCP packet:
       res.socket.write(res._header)
       res._headerSent = true
 
     })
-    .listen(8000, () => { console.log(`    - Listening on http://localhost:8000`) })
+    .listen(8000, () => { console.log(`    - Listening on http://localhost:8000${usrURL}`) })
   });
 
   // Handle incoming payments
@@ -115,6 +118,7 @@ const connect = () => {
       })
       return
     }
+
     console.log(`    - Calculating hmac; for clientId ${clientId}, the shared secret is ${base64url(secret)}.`)
     const fulfillmentGenerator = hmac(secret, 'ilp_psk_condition')
     const fulfillment =  hmac(fulfillmentGenerator, ilpPacket)
@@ -134,11 +138,21 @@ const connect = () => {
     // The ledger will check if the fulfillment is correct and
     // if it was submitted before the transfer's rollback timeout
     plugin.fulfillCondition(transfer.id, base64url(fulfillment))
-      .catch(function () {
-        console.log(`    - Error fulfilling the transfer`)
-      })
-      console.log(`    - Payment complete`)
-  })
+    .catch(function () {
+      console.log(`    - Error fulfilling the transfer`)
+    })
+    
+    console.log(`    - Payment complete`);
+
+  });
 }
 
+const getBalance = () => {
+  return plugin.getBalance().then((balance) => {
+    console.log("BALANCE IS " + balance);
+    return balance;
+  });
+}
+
+exports.getBalance = getBalance;
 exports.connect = connect;

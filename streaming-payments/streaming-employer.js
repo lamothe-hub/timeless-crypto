@@ -18,15 +18,17 @@ function hmac (secret, input) {
 }
 
 var loop;
+//var balance;
 
-const connect = () => {
+const connect = (userId) => {
 
   plugin
 	.connect()
-	.then( () => { return fetch('http://localhost:8000/') })	
+	.then( () => { return fetch('http://localhost:8000/' + userId) })	
 	.then( (res) => {
 
-		const parts = res.headers.get('Pay').split(' ')
+		const parts = res.headers.get('Pay').split(' ');
+		const incomingId = res.headers.get('UserId');
 		
 		if (parts[0] === 'interledger-psk') {
 
@@ -38,30 +40,31 @@ const connect = () => {
 				const destinationAddress = parts[2] + '.' + paymentId
 				const sharedSecret = Buffer.from(parts[3], 'base64')
 				const ilpPacket = IlpPacket.serializeIlpPayment({
-				account: destinationAddress,
-				amount: destinationAmount,
-				data: ''
+					account: destinationAddress,
+					amount: destinationAmount,
+					data: ''
+				});
 
-			})
+				//this.balance = res.headers.get('Balance');
 
-			process.stdout.write('.')
+				process.stdout.write('.')
+				
+				const fulfillmentGenerator = hmac(sharedSecret, 'ilp_psk_condition')
+				const fulfillment =  hmac(fulfillmentGenerator, ilpPacket)
+				const condition = sha256(fulfillment)
+
+				plugin.sendTransfer({
+					id: uuid(),
+					from: plugin.getAccount(),
+					to: destinationAddress,
+					ledger: plugin.getInfo().prefix,
+					expiresAt: new Date(new Date().getTime() + 1000000).toISOString(),
+					amount: destinationAmount,
+					executionCondition: base64url(condition),
+					ilp: base64url(ilpPacket)
+				})
 			
-			const fulfillmentGenerator = hmac(sharedSecret, 'ilp_psk_condition')
-			const fulfillment =  hmac(fulfillmentGenerator, ilpPacket)
-			const condition = sha256(fulfillment)
-
-			plugin.sendTransfer({
-				id: uuid(),
-				from: plugin.getAccount(),
-				to: destinationAddress,
-				ledger: plugin.getInfo().prefix,
-				expiresAt: new Date(new Date().getTime() + 1000000).toISOString(),
-				amount: destinationAmount,
-				executionCondition: base64url(condition),
-				ilp: base64url(ilpPacket)
-			})
-			
-			paymentId++
+				paymentId++
 
 			}, 1000)
 		}
