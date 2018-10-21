@@ -1,8 +1,10 @@
 const IlpPacket = require('ilp-packet')
-const plugin = require('./plugins.js').xrp.Employer()
 const uuid = require('uuid/v4')
 const fetch = require('node-fetch')
 const crypto = require('crypto')
+
+var loop;
+var plugin;
 
 function base64url (buf) {
   return buf.toString('base64')
@@ -13,17 +15,16 @@ function sha256 (preimage) {
   return crypto.createHash('sha256').update(preimage).digest()
 }
 
-function hmac (secret, input) {
+function hmac (secret, input){
   return crypto.createHmac('sha256', secret).update(input).digest()
 }
 
-var loop;
-
-const connect = (userId) => {
+const connect = (xrp) => {
+	plugin = xrp;
 
   plugin
 	.connect()
-	.then( () => { return fetch('http://localhost:8000/' + userId) })	
+	.then( () => { return fetch('http://localhost:8000/') })	
 	.then( (res) => {
 
 		const parts = res.headers.get('Pay').split(' ');
@@ -71,7 +72,7 @@ const connect = (userId) => {
 	});
 }
 
-const stop = () => {
+const stop = (xrp) => {
 	clearInterval(loop);
 };
 

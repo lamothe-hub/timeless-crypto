@@ -6,8 +6,14 @@
 </head>
 
 <body>
-  <h1>Express</h1>
-  <p>Welcome to Express</p>
+  <form method='POST'>
+    Employer address: <input type='text' name='employerAddress'/><br>
+    Employer secret: <input type='text' name='employerSecret'/><br> 
+    Employee address: <input type='text' name='employeeAddress'/><br>
+    Employee secret: <input type='text' name='employeeSecret'/><br> 
+    <input type='submit' formaction='/start' value='Submit'/>
+    <input type='submit' formaction='/stop' value='Submit'/>
+  </form> 
 </body>
 
 </html>

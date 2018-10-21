@@ -1,7 +1,5 @@
 const http = require('http')
-const url = require('url')
 const crypto = require('crypto')
-const plugin = require('./plugins.js').xrp.Employee()
 const IlpPacket = require('ilp-packet')
 
 function base64url (buf) {
@@ -18,12 +16,14 @@ function hmac (secret, input) {
 }
 
 let sharedSecrets = {}
-let usrURL;
-const cost = 10
+let plugin;
+const cost = 10;
 
-const connect = () => {
+const connect = (xrp) => {
   console.log(`== Starting the shop server == `)
   console.log(` 1. Connecting to an account to accept payments...`)
+
+  plugin = xrp;
 
   plugin
   .connect()
@@ -45,13 +45,12 @@ const connect = () => {
     console.log(`    - Charging ${normalizedCost} ${ledgerInfo.currencyCode}`)
 
     // Handle incoming web requests
-    http.createServer(function (req, res) {
+    plugin.server = http.createServer(function (req, res) {
 
       // Generate a client ID and a shared secret from which this client
       // can derive fulfillment/condition pairs.
       const clientId = base64url(crypto.randomBytes(8))
       const sharedSecret = crypto.randomBytes(32)
-      usrURL = req.url;
 
       // Store the shared secret and the http request context to use when we get paid
       sharedSecrets[clientId]  = { sharedSecret, res }
@@ -60,7 +59,6 @@ const connect = () => {
 
       res.writeHead(200, {
         Pay: `interledger-psk ${cost} ${account}.${clientId} ${base64url(sharedSecret)}`,
-        UserId: `${usrURL.substring(1)}`
       })
       
       // Flush the headers in a first TCP packet:
@@ -68,7 +66,7 @@ const connect = () => {
       res._headerSent = true
 
     })
-    .listen(8000, () => { console.log(`    - Listening on http://localhost:8000${usrURL}`) })
+    .listen(8000, () => { console.log(`    - Listening on http://localhost:8000`) })
   });
 
   // Handle incoming payments
@@ -153,5 +151,8 @@ const getBalance = async () => {
   });
 }
 
+const close = async () => { await plugin.server.close(); }
+
 exports.getBalance = getBalance;
 exports.connect = connect;
+exports.close = close;
