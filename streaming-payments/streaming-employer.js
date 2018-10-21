@@ -24,11 +24,10 @@ const connect = (xrp) => {
 
   plugin
 	.connect()
-	.then( () => { return fetch('http://localhost:8000/') })	
+	.then( () => { return fetch('http://localhost:3000/api/' + xrp.id) })	
 	.then( (res) => {
 
 		const parts = res.headers.get('Pay').split(' ');
-		const incomingId = res.headers.get('UserId');
 		
 		if (parts[0] === 'interledger-psk') {
 
@@ -50,7 +49,7 @@ const connect = (xrp) => {
 				const fulfillmentGenerator = hmac(sharedSecret, 'ilp_psk_condition')
 				const fulfillment =  hmac(fulfillmentGenerator, ilpPacket)
 				const condition = sha256(fulfillment)
-
+				
 				plugin.sendTransfer({
 					id: uuid(),
 					from: plugin.getAccount(),

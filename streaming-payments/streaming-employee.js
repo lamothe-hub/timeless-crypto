@@ -15,11 +15,11 @@ function hmac (secret, input) {
   return crypto.createHmac('sha256', secret).update(input).digest()
 }
 
-let sharedSecrets = {}
+let sharedSecrets = {};
 let plugin;
 const cost = 10;
 
-const connect = (xrp) => {
+const connect = (xrp, two) => {
   console.log(`== Starting the shop server == `)
   console.log(` 1. Connecting to an account to accept payments...`)
 
@@ -30,8 +30,8 @@ const connect = (xrp) => {
   .then( () => {
   
     // Get ledger and account information from the plugin
-    const ledgerInfo = plugin.getInfo()
-    const account = plugin.getAccount()
+    const ledgerInfo = plugin.getInfo();
+    const account = plugin.getAccount();
 
     console.log(`    - Connected to ledger: ${ledgerInfo.prefix}`)
     console.log(`    -- Account: ${account}`)
@@ -45,28 +45,7 @@ const connect = (xrp) => {
     console.log(`    - Charging ${normalizedCost} ${ledgerInfo.currencyCode}`)
 
     // Handle incoming web requests
-    plugin.server = http.createServer(function (req, res) {
-
-      // Generate a client ID and a shared secret from which this client
-      // can derive fulfillment/condition pairs.
-      const clientId = base64url(crypto.randomBytes(8))
-      const sharedSecret = crypto.randomBytes(32)
-
-      // Store the shared secret and the http request context to use when we get paid
-      sharedSecrets[clientId]  = { sharedSecret, res }
-
-      console.log(`    - Waiting for payments...`)
-
-      res.writeHead(200, {
-        Pay: `interledger-psk ${cost} ${account}.${clientId} ${base64url(sharedSecret)}`,
-      })
-      
-      // Flush the headers in a first TCP packet:
-      res.socket.write(res._header)
-      res._headerSent = true
-
-    })
-    .listen(8000, () => { console.log(`    - Listening on http://localhost:8000`) })
+    
   });
 
   // Handle incoming payments
@@ -145,6 +124,27 @@ const connect = (xrp) => {
   });
 }
 
+const server = function(req, res, next) {
+
+  // Generate a client ID and a shared secret from which this client
+  // can derive fulfillment/condition pairs.
+  const clientId = base64url(crypto.randomBytes(8))
+  const sharedSecret = crypto.randomBytes(32)
+
+  // Store the shared secret and the http request context to use when we get paid
+  sharedSecrets[clientId]  = { sharedSecret, res }
+
+  console.log(`    - Waiting for payments...`)
+
+  res.writeHead(200, {
+    Pay: `interledger-psk ${cost} ${req.prefix}${req.params.id}.${clientId} ${base64url(sharedSecret)}`,
+  })
+  
+  // Flush the headers in a first TCP packet:
+  res.socket.write(res._header)
+  res._headerSent = true
+}
+
 const getBalance = async () => {
   return plugin.getBalance().then((balance) => {
     return balance;
@@ -156,3 +156,4 @@ const close = async () => { await plugin.server.close(); }
 exports.getBalance = getBalance;
 exports.connect = connect;
 exports.close = close;
+exports.server = server;

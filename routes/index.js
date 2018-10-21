@@ -8,13 +8,15 @@ var router = express.Router();
 
 // keeps track of how many users are running at the same time
 var users = {};
+const prefix = 'test.crypto.xrp.';
+const wsServer = 'wss://s.altnet.rippletest.net:51233';
 
 function XrpObj(account, secret) {
   let obj = new XrpEscrowPlugin({
     secret: secret,
     account: account,
-    server: 'wss://s.altnet.rippletest.net:51233',
-    prefix: 'test.crypto.xrp.'
+    server: wsServer,
+    prefix: prefix
   });
 
   obj.id = account;
@@ -37,7 +39,7 @@ function employeeXrpObj(req) {
 
 
 router.post('/start', async function(req, res, next) {
-  console.log(req);
+
   // create employer object and employee object
   let employeeXrp = employeeXrpObj(req);
   let employerXrp = employerXrpObj(req);
@@ -59,7 +61,6 @@ router.post('/start', async function(req, res, next) {
 router.post('/stop', async function(req, res, next) {
 
   // create employer object and employee object
-  let employeeXrp = employeeXrpObj(req);
   let employerXrp = employerXrpObj(req);
   
   // stop only the user that's running
@@ -71,16 +72,21 @@ router.post('/stop', async function(req, res, next) {
 	res.send(msg);
 });
 
-router.get('/userbalance', async function(res, res, next) {
+router.get('/userbalance', async function(req, res, next) {
   let balance = await employee.getBalance();
   console.log("BALANCE IS " + balance);
   res.send(balance);
 });
 
-router.get('/employerbalance', async function(res, res, next) {
+router.get('/employerbalance', async function(req, res, next) {
   let balance = await employer.getBalance();
   console.log("BALANCE IS " + balance);
   res.send(balance);
+});
+
+router.get('/api/:id', async function(req, res, next) {
+  req.prefix = prefix;
+  await employee.server(req, res, next);
 });
 
 module.exports = router;
