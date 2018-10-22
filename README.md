@@ -46,4 +46,4 @@ This is just the beginning for the Timeless Platform! Future updates to Timeless
 
 Best, 
 
-Jeffrey
+Jeffrey, Prakrit and Norman
