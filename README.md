@@ -2,7 +2,7 @@
 Get paid in real-time. Stream your earnings by the second through the cryptocurrency interledger.
 
 ## Inspiration
-We believe Timeless has serious potential to reinvent the way people are compensated for work. We were inspired by the cutting-edge tech presented by Ripple and associates and we immediately had a few "ah ha!" moments about how it could be applied in creative ways. It wasn't just that the tech was cool, we actually found that this was something we could use to develop something incredibly useful and that would dramatically improve people's' lives. Working on this project, we were especially motivated by the belief that we could make a difference in the motivation-levels and success of people and reframe the way they think about payments.
+We believe Timeless has serious potential to reinvent the way people are compensated for work. We were inspired by the cutting-edge tech presented at HackHarvard and we immediately had a few "ah ha!" moments about how it could be applied in creative ways. It wasn't just that the tech was cool, we actually found that this was something we could use to develop something incredibly useful and that would dramatically improve people's' lives. Working on this project, we were especially motivated by the belief that we could make a difference in the motivation-levels and success of people and reframe the way they think about payments.
  
 ## Problem statement
 Traditionally, employees have been paid in biweekly lump sums. While this may be convenient for employers and their bookkeepers, the system poses inconveniences and hardships for the employee. Here are some of the big ones which we set out to address:
